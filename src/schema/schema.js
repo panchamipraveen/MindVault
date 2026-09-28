@@ -102,8 +102,17 @@ const root = {
 
     const filter = {};
 
-    const currentPage = page && page > 0 ? page : 1;
-    const pageLimit = limit && limit > 0 ? limit : 10;
+    const currentPage = page === undefined ? 1 : page;
+
+if (currentPage < 1) {
+  throw new Error("Page must be greater than 0.");
+}
+
+const pageLimit = limit === undefined ? 10 : limit;
+
+if (pageLimit < 1 || pageLimit > 100) {
+  throw new Error("Limit must be between 1 and 100.");
+}
     const skip = (currentPage - 1) * pageLimit;
 
     const sortOrder = sortBy === "oldest"
