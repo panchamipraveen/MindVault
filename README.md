@@ -70,6 +70,9 @@ MindVault/
 - Filter pinned notes
 - Pin and unpin notes
 - Paginate notes with page and limit
+- Sort notes by newest or oldest
+- Get total note count with filters
+- Validate pagination parameters
 ## Data Relationship
 
 Each note belongs to a category.
