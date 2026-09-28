@@ -32,6 +32,7 @@ const schema = buildSchema(`
   pinned: Boolean
   page: Int
   limit: Int
+  sortBy: String
 ): [Note!]!
     note(id: ID!): Note
   }
@@ -83,12 +84,14 @@ const root = {
   // NOTE QUERIES
   // -------------------------
 
-  notes: async ({ categoryId, keyword, pinned, page, limit }) => {
-
+  notes: async ({ categoryId, keyword, pinned, page, limit, sortBy }) => {
     const filter = {};
     const currentPage = page && page > 0 ? page : 1;
     const pageLimit = limit && limit > 0 ? limit : 10;
     const skip = (currentPage - 1) * pageLimit;
+    const sortOrder = sortBy === "oldest"
+  ? { createdAt: 1 }
+  : { isPinned: -1, createdAt: -1 };
 
     if (categoryId) {
       filter.category = categoryId;
@@ -107,15 +110,12 @@ const root = {
       ];
     }
 
-    return await Note.find(filter)
-  .populate("category")
-  .sort({
-    isPinned: -1,
-    createdAt: -1
-  })
-  .skip(skip)
+     return await Note.find(filter)
+    .populate("category")
+    .sort(sortOrder)
+    .skip(skip)
     .limit(pageLimit);
-  },
+},
 
   note: async ({ id }) => {
     return await Note.findById(id).populate("category");
