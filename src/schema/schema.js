@@ -27,11 +27,12 @@ const schema = buildSchema(`
     categories: [Category!]!
     
     notes(
-      categoryId: ID
-      keyword: String
-      pinned: Boolean
-    ): [Note!]!
-
+  categoryId: ID
+  keyword: String
+  pinned: Boolean
+  page: Int
+  limit: Int
+): [Note!]!
     note(id: ID!): Note
   }
 
@@ -82,9 +83,12 @@ const root = {
   // NOTE QUERIES
   // -------------------------
 
-  notes: async ({ categoryId, keyword, pinned }) => {
+  notes: async ({ categoryId, keyword, pinned, page, limit }) => {
 
     const filter = {};
+    const currentPage = page && page > 0 ? page : 1;
+    const pageLimit = limit && limit > 0 ? limit : 10;
+    const skip = (currentPage - 1) * pageLimit;
 
     if (categoryId) {
       filter.category = categoryId;
@@ -104,11 +108,13 @@ const root = {
     }
 
     return await Note.find(filter)
-      .populate("category")
-      .sort({
-        isPinned: -1,
-        createdAt: -1
-      });
+  .populate("category")
+  .sort({
+    isPinned: -1,
+    createdAt: -1
+  })
+  .skip(skip)
+    .limit(pageLimit);
   },
 
   note: async ({ id }) => {
