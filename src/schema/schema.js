@@ -25,21 +25,28 @@ const schema = buildSchema(`
 
   type Query {
     categories: [Category!]!
-    
+
     notes(
-  categoryId: ID
-  keyword: String
-  pinned: Boolean
-  page: Int
-  limit: Int
-  sortBy: String
-): [Note!]!
+      categoryId: ID
+      keyword: String
+      pinned: Boolean
+      page: Int
+      limit: Int
+      sortBy: String
+    ): [Note!]!
+
+    notesCount(
+      categoryId: ID
+      keyword: String
+      pinned: Boolean
+    ): Int!
+
     note(id: ID!): Note
   }
 
   type Mutation {
     createCategory(name: String!): Category!
-    
+
     updateCategory(
       id: ID!
       name: String!
@@ -84,14 +91,24 @@ const root = {
   // NOTE QUERIES
   // -------------------------
 
-  notes: async ({ categoryId, keyword, pinned, page, limit, sortBy }) => {
+  notes: async ({
+    categoryId,
+    keyword,
+    pinned,
+    page,
+    limit,
+    sortBy
+  }) => {
+
     const filter = {};
+
     const currentPage = page && page > 0 ? page : 1;
     const pageLimit = limit && limit > 0 ? limit : 10;
     const skip = (currentPage - 1) * pageLimit;
+
     const sortOrder = sortBy === "oldest"
-  ? { createdAt: 1 }
-  : { isPinned: -1, createdAt: -1 };
+      ? { createdAt: 1 }
+      : { isPinned: -1, createdAt: -1 };
 
     if (categoryId) {
       filter.category = categoryId;
@@ -105,17 +122,65 @@ const root = {
       const safeKeyword = escapeRegex(keyword.trim());
 
       filter.$or = [
-        { title: { $regex: safeKeyword, $options: "i" } },
-        { content: { $regex: safeKeyword, $options: "i" } }
+        {
+          title: {
+            $regex: safeKeyword,
+            $options: "i"
+          }
+        },
+        {
+          content: {
+            $regex: safeKeyword,
+            $options: "i"
+          }
+        }
       ];
     }
 
-     return await Note.find(filter)
-    .populate("category")
-    .sort(sortOrder)
-    .skip(skip)
-    .limit(pageLimit);
-},
+    return await Note.find(filter)
+      .populate("category")
+      .sort(sortOrder)
+      .skip(skip)
+      .limit(pageLimit);
+  },
+
+  notesCount: async ({
+    categoryId,
+    keyword,
+    pinned
+  }) => {
+
+    const filter = {};
+
+    if (categoryId) {
+      filter.category = categoryId;
+    }
+
+    if (typeof pinned === "boolean") {
+      filter.isPinned = pinned;
+    }
+
+    if (keyword && keyword.trim()) {
+      const safeKeyword = escapeRegex(keyword.trim());
+
+      filter.$or = [
+        {
+          title: {
+            $regex: safeKeyword,
+            $options: "i"
+          }
+        },
+        {
+          content: {
+            $regex: safeKeyword,
+            $options: "i"
+          }
+        }
+      ];
+    }
+
+    return await Note.countDocuments(filter);
+  },
 
   note: async ({ id }) => {
     return await Note.findById(id).populate("category");
@@ -134,7 +199,10 @@ const root = {
     }
 
     const existingCategory = await Category.findOne({
-      name: { $regex: `^${escapeRegex(cleanName)}$`, $options: "i" }
+      name: {
+        $regex: `^${escapeRegex(cleanName)}$`,
+        $options: "i"
+      }
     });
 
     if (existingCategory) {
@@ -154,9 +222,22 @@ const root = {
       throw new Error("Category name cannot be empty.");
     }
 
+    const existingCategory = await Category.findOne({
+      name: {
+        $regex: `^${escapeRegex(cleanName)}$`,
+        $options: "i"
+      }
+    });
+
+    if (existingCategory && existingCategory._id.toString() !== id) {
+      throw new Error("Category already exists.");
+    }
+
     const category = await Category.findByIdAndUpdate(
       id,
-      { name: cleanName },
+      {
+        name: cleanName
+      },
       {
         new: true,
         runValidators: true
@@ -204,7 +285,11 @@ const root = {
   // NOTE MUTATIONS
   // -------------------------
 
-  createNote: async ({ title, content, categoryId }) => {
+  createNote: async ({
+    title,
+    content,
+    categoryId
+  }) => {
 
     const cleanTitle = title.trim();
     const cleanContent = content.trim();
@@ -232,7 +317,12 @@ const root = {
     return await note.populate("category");
   },
 
-  updateNote: async ({ id, title, content, categoryId }) => {
+  updateNote: async ({
+    id,
+    title,
+    content,
+    categoryId
+  }) => {
 
     const note = await Note.findById(id);
 
@@ -241,6 +331,7 @@ const root = {
     }
 
     if (title !== undefined) {
+
       if (!title.trim()) {
         throw new Error("Note title cannot be empty.");
       }
@@ -249,6 +340,7 @@ const root = {
     }
 
     if (content !== undefined) {
+
       if (!content.trim()) {
         throw new Error("Note content cannot be empty.");
       }
