@@ -69,6 +69,7 @@ MindVault/
 - Filter notes by category
 - Filter pinned notes
 - Pin and unpin notes
+- Paginate notes with page and limit
 ## Data Relationship
 
 Each note belongs to a category.
