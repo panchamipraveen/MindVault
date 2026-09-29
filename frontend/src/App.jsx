@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Analytics } from "@vercel/analytics/react";
 import "./App.css";
 
 const GRAPHQL_URL = "https://mindvault-api-30yo.onrender.com/graphql";
@@ -1390,6 +1391,7 @@ function App() {
           </div>
         </div>
       )}
+      <Analytics />
     </div>
   );
 }
