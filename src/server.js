@@ -1,10 +1,14 @@
 const express = require("express");
+const cors = require("cors");
 const mongoose = require("mongoose");
 require("dotenv").config();
+
 const { createHandler } = require("graphql-http/lib/use/express");
 const { schema, root } = require("./schema/schema");
 
 const app = express();
+
+app.use(cors());
 
 const PORT = process.env.PORT || 3000;
 

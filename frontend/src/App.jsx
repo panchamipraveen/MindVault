@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import "./App.css";
 
-const GRAPHQL_URL = "/graphql";
+const GRAPHQL_URL = "https://mindvault-api-30yo.onrender.com/graphql";
 
 function formatDate(value) {
   const timestamp = parseInt(value, 10);
