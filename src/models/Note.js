@@ -24,7 +24,14 @@ const noteSchema = new mongoose.Schema({
     default: false
   }
 }, {
-  timestamps: true
+  timestamps: true,
+  toJSON: {
+    transform: (doc, ret) => {
+      ret.createdAt = ret.createdAt.getTime().toString();
+      ret.updatedAt = ret.updatedAt.getTime().toString();
+      return ret;
+    }
+  }
 });
 
 const Note = mongoose.model("Note", noteSchema);

@@ -104,20 +104,22 @@ const root = {
 
     const currentPage = page === undefined ? 1 : page;
 
-if (currentPage < 1) {
-  throw new Error("Page must be greater than 0.");
-}
+    if (currentPage < 1) {
+      throw new Error("Page must be greater than 0.");
+    }
 
-const pageLimit = limit === undefined ? 10 : limit;
+    const pageLimit = limit === undefined ? 10 : limit;
 
-if (pageLimit < 1 || pageLimit > 100) {
-  throw new Error("Limit must be between 1 and 100.");
-}
+    if (pageLimit < 1 || pageLimit > 100) {
+      throw new Error("Limit must be between 1 and 100.");
+    }
+
     const skip = (currentPage - 1) * pageLimit;
 
-    const sortOrder = sortBy === "oldest"
-      ? { createdAt: 1 }
-      : { isPinned: -1, createdAt: -1 };
+    const sortOrder =
+      sortBy === "oldest"
+        ? { createdAt: 1 }
+        : { isPinned: -1, createdAt: -1 };
 
     if (categoryId) {
       filter.category = categoryId;
@@ -128,6 +130,7 @@ if (pageLimit < 1 || pageLimit > 100) {
     }
 
     if (keyword && keyword.trim()) {
+
       const safeKeyword = escapeRegex(keyword.trim());
 
       filter.$or = [
@@ -170,6 +173,7 @@ if (pageLimit < 1 || pageLimit > 100) {
     }
 
     if (keyword && keyword.trim()) {
+
       const safeKeyword = escapeRegex(keyword.trim());
 
       filter.$or = [
@@ -238,7 +242,10 @@ if (pageLimit < 1 || pageLimit > 100) {
       }
     });
 
-    if (existingCategory && existingCategory._id.toString() !== id) {
+    if (
+      existingCategory &&
+      existingCategory._id.toString() !== id
+    ) {
       throw new Error("Category already exists.");
     }
 
@@ -278,7 +285,8 @@ if (pageLimit < 1 || pageLimit > 100) {
     if (notesUsingCategory) {
       return {
         success: false,
-        message: "Cannot delete category because notes are still using it."
+        message:
+          "Cannot delete category because notes are still using it."
       };
     }
 
